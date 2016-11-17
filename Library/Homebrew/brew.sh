@@ -1,6 +1,7 @@
+# the -C option executes the git command from the given path
 HOMEBREW_VERSION="$(git -C "$HOMEBREW_REPOSITORY" describe --tags --dirty 2>/dev/null)"
 HOMEBREW_USER_AGENT_VERSION="$HOMEBREW_VERSION"
-if [[ -z "$HOMEBREW_VERSION" ]]
+if [[ -z "$HOMEBREW_VERSION" ]] # If string has length of zero
 then
   HOMEBREW_VERSION=">1.1.0 (no git repository)"
   HOMEBREW_USER_AGENT_VERSION="1.X.Y"
@@ -10,23 +11,28 @@ fi
 # Higher depths mean this command was invoked by another Homebrew command.
 export HOMEBREW_COMMAND_DEPTH=$((HOMEBREW_COMMAND_DEPTH + 1))
 
+# TODO: warnings?
 onoe() {
-  if [[ -t 2 ]] # check whether stderr is a tty.
+  if [[ -t 2 ]] # check whether stderr is a tty. (terminal)
   then
     echo -ne "\033[4;31mError\033[0m: " >&2 # highlight Error with underline and red color
   else
+    # Not being operated from a terminal; just use uncolored plain text
     echo -n "Error: " >&2
   fi
-  if [[ $# -eq 0 ]]
+  # '#$' is equivalent of argc for bash
+  if [[ $# -eq 0 ]] # If no args
   then
     /bin/cat >&2
   else
+    # '$*$ is like unparsed argc string
     echo "$*" >&2
   fi
 }
 
+# TODO: warning and exit
 odie() {
-  onoe "$@"
+  onoe "$@" # '$@' is array of args (like argc)
   exit 1
 }
 
@@ -88,8 +94,9 @@ case "$HOMEBREW_SYSTEM" in
   Linux)  HOMEBREW_LINUX="1" ;;
 esac
 
+# Set up variables with values that depend on whether machine is a Mac or Linux
 HOMEBREW_CURL="/usr/bin/curl"
-if [[ -n "$HOMEBREW_MACOS" ]]
+if [[ -n "$HOMEBREW_MACOS" ]] # If variable is not null (machine is a Mac)
 then
   HOMEBREW_PROCESSOR="$(uname -p)"
   HOMEBREW_PRODUCT="Homebrew"
@@ -224,6 +231,8 @@ then
   fi
 fi
 
+# This actually executes the command, from a file in 
+# /usr/local/Homebrew/Library/Homebrew/cmd
 if [[ -f "$HOMEBREW_LIBRARY/Homebrew/cmd/$HOMEBREW_COMMAND.sh" ]]
 then
   HOMEBREW_BASH_COMMAND="$HOMEBREW_LIBRARY/Homebrew/cmd/$HOMEBREW_COMMAND.sh"
